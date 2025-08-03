@@ -17,15 +17,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import {
-  format,
-  parseISO,
-  startOfMonth,
-  startOfYear,
-  endOfMonth,
-  endOfYear,
-  startOfWeek,
-} from "date-fns";
+import { format, parseISO, startOfWeek } from "date-fns";
 import { motion } from "framer-motion";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -53,6 +45,15 @@ interface Expense {
   date: string;
 }
 
+interface ExchangeRates {
+  [key: string]: number;
+}
+
+interface Cache {
+  data: ExchangeRates;
+  timestamp: number;
+}
+
 export default function AnalyticsCharts() {
   const [user] = useAuthState(auth);
   const [timePeriod, setTimePeriod] = useState<
@@ -60,7 +61,8 @@ export default function AnalyticsCharts() {
   >("Monthly");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [currency, setCurrency] = useState("USD");
-  const [rates, setRates] = useState<{ [key: string]: number }>({});
+  const [rates, setRates] = useState<ExchangeRates>({});
+  const [cache, setCache] = useState<Cache | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const queryClient = useQueryClient();
@@ -85,7 +87,7 @@ export default function AnalyticsCharts() {
     data: expenses = [],
     isLoading,
     error,
-  } = useQuery({
+  } = useQuery<Expense[], Error>({
     queryKey: ["expenses", user?.uid],
     queryFn: async () => {
       if (!user) throw new Error("User not authenticated");
@@ -97,23 +99,23 @@ export default function AnalyticsCharts() {
 
   // Cache exchange rates
   useEffect(() => {
-    let cache: { data: { [key: string]: number }; timestamp: number } | null =
-      null;
     const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
-    if (!cache || Date.now() - cache.timestamp > CACHE_DURATION) {
+    if (!cache || (cache && Date.now() - cache.timestamp > CACHE_DURATION)) {
       getExchangeRates("USD")
         .then((data) => {
-          cache = { data, timestamp: Date.now() };
+          const newCache: Cache = { data, timestamp: Date.now() };
+          setCache(newCache);
           setRates(data);
         })
-        .catch((err) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .catch((err: any) => {
           console.error("Error fetching exchange rates:", err);
           toast.error("Failed to fetch exchange rates");
         });
     } else {
       setRates(cache.data);
     }
-  }, []);
+  }, [cache]);
 
   const convertAmount = (amount: number, fromCurrency: string) => {
     if (!rates[currency] || !rates[fromCurrency]) return amount;

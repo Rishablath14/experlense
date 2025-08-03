@@ -84,14 +84,13 @@ export default function ExpenseList() {
   });
 
   // Cache exchange rates
-  const { data: exchangeRates } = useQuery({
+  const { data: exchangeRates, isError } = useQuery({
     queryKey: ["exchangeRates"],
     queryFn: () =>
       axios
         .get("https://api.exchangerate-api.com/v4/latest/USD")
         .then((res) => res.data.rates),
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    onError: () => toast.error("Failed to fetch exchange rates"),
   });
 
   const convertAmount = (amount: number, fromCurrency: string) => {
@@ -196,6 +195,16 @@ export default function ExpenseList() {
           : convertAmount(b.amount, b.currency);
       return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
     });
+
+  if (isError) {
+    return (
+      <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100 max-w-4xl mx-auto mt-6">
+        <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6">
+          Error fetching exchange rates
+        </h2>
+      </div>
+    );
+  }
 
   return (
     <motion.div

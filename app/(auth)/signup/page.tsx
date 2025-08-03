@@ -20,6 +20,7 @@ export default function Signup() {
       await signUp(email, password);
       toast.success("Signed up successfully!", { id: toastId });
       router.push("/dashboard");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const errorMessage =
         err.code === "auth/weak-password"
@@ -36,6 +37,7 @@ export default function Signup() {
       await signInWithGoogle();
       toast.success("Signed up with Google!", { id: toastId });
       router.push("/dashboard");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error("Failed to sign up with Google", { id: toastId });
       setError("Failed to sign up with Google");

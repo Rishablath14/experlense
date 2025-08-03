@@ -20,6 +20,7 @@ export default function Login() {
       await signInWithEmail(email, password);
       toast.success("Signed in successfully!", { id: toastId });
       router.push("/dashboard");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error("Invalid credentials", { id: toastId });
       setError("Invalid credentials");
@@ -32,6 +33,7 @@ export default function Login() {
       await signInWithGoogle();
       toast.success("Signed in with Google!", { id: toastId });
       router.push("/dashboard");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error("Failed to sign in with Google", { id: toastId });
       setError("Failed to sign in with Google");

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { ref, set, remove } from "firebase/database";
 import { database } from "@/lib/firebase";

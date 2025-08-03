@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
     const expenseRef = ref(database, `expenses/${userId}`);
     const snapshot = await get(expenseRef);
     const expenses = snapshot.val()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ? Object.entries(snapshot.val()).map(([id, data]: [string, any]) => ({
           id,
           ...data,
