@@ -1,13 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { ref, set, remove } from "firebase/database";
 import { database } from "@/lib/firebase";
 
-interface Params {
-  params: { id: string };
-}
-
-export async function PUT(request: NextRequest, { params }: Params) {
-  const { id } = params;
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
   try {
     const { userId, amount, category, description, currency, date } =
       await request.json();
@@ -21,7 +21,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     await set(ref(database, `expenses/${userId}/${id}`), {
       amount,
       category,
-      description: description || "", // Ensure description is a string
+      description: description || "",
       currency,
       date,
     });
@@ -29,7 +29,6 @@ export async function PUT(request: NextRequest, { params }: Params) {
       { id, amount, category, description, currency, date },
       { status: 200 }
     );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error updating expense:", error);
     return NextResponse.json(
@@ -39,8 +38,11 @@ export async function PUT(request: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: Params) {
-  const { id } = params;
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get("userId");
   if (!userId || !id) {
@@ -53,7 +55,6 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   try {
     await remove(ref(database, `expenses/${userId}/${id}`));
     return NextResponse.json({ message: "Expense deleted" }, { status: 200 });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error deleting expense:", error);
     return NextResponse.json(
